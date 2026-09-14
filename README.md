@@ -1,1 +1,1 @@
-# Moja praca
+# Projekt Python
