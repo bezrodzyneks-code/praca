@@ -1,0 +1,128 @@
+<mxfile host="app.diagrams.net" modified="2026-09-18T08:48:00.000Z" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="krolestwo-cieni-usecase" name="Diagram przypadków użycia">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="Diagram przypadków użycia – Królestwo Cieni" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;fontStyle=1;fontColor=#172B4D;" vertex="1" parent="1">
+          <mxGeometry x="560" y="20" width="800" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- System boundaries -->
+        <mxCell id="userBoundary" value="System – strona użytkownika (gracz)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF4FF;strokeColor=#1976D2;strokeWidth=2;fontSize=20;fontStyle=1;verticalAlign=top;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="90" width="880" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="adminBoundary" value="System – strona administratora" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECF8F0;strokeColor=#159447;strokeWidth=2;fontSize=20;fontStyle=1;verticalAlign=top;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="950" y="90" width="880" height="900" as="geometry"/>
+        </mxCell>
+
+        <!-- Actors -->
+        <mxCell id="actorUser" value="Użytkownik&lt;br&gt;(Gracz)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="55" y="470" width="70" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="actorAdmin" value="Administrator" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="975" y="470" width="70" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- User use cases -->
+        <mxCell id="uRegister" value="Rejestracja konta" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="140" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uLogin" value="Logowanie" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="220" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uLogout" value="Wylogowanie" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="300" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uSession" value="Zarządzanie sesją" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="420" y="160" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uProfile" value="Przeglądanie profilu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="420" y="230" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uEdit" value="Edycja danych" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="420" y="300" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uPassword" value="Zmiana hasła" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="420" y="370" width="220" height="55" as="geometry"/></mxCell>
+
+        <mxCell id="uCreate" value="Tworzenie postaci" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="390" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uDevelop" value="Rozwój postaci" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="470" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uStats" value="Zarządzanie statystykami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="420" y="470" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uLevel" value="Awans na kolejny poziom" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="420" y="540" width="220" height="55" as="geometry"/></mxCell>
+
+        <mxCell id="uInventory" value="Ekwipunek" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="550" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uBrowseInv" value="Przeglądanie ekwipunku" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="420" y="610" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uItems" value="Zarządzanie przedmiotami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="420" y="680" width="220" height="55" as="geometry"/></mxCell>
+
+        <mxCell id="uFight" value="Walka z potworami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="630" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uCombat" value="System walki" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="420" y="750" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uInstances" value="Uczestnictwo w instancjach" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="170" y="710" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uInstanceRun" value="Rozgrywka w instancji" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="420" y="820" width="220" height="55" as="geometry"/></mxCell>
+        <mxCell id="uRewards" value="Zdobywanie nagród" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="170" y="790" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uExpGold" value="Otrzymywanie EXP i złota" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="420" y="890" width="220" height="45" as="geometry"/></mxCell>
+        <mxCell id="uStatsView" value="Sprawdzanie statystyk" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=14;" vertex="1" parent="1"><mxGeometry x="665" y="470" width="210" height="55" as="geometry"/></mxCell>
+        <mxCell id="uHistory" value="Historia walk i postępów" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D8EBFF;strokeColor=#1459A6;fontSize=13;" vertex="1" parent="1"><mxGeometry x="665" y="540" width="210" height="55" as="geometry"/></mxCell>
+
+        <!-- Admin use cases -->
+        <mxCell id="aLogin" value="Logowanie do panelu&lt;br&gt;administracyjnego" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="140" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aPerm" value="Weryfikacja uprawnień" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1390" y="140" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aUsers" value="Zarządzanie użytkownikami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="240" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aChars" value="Zarządzanie postaciami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="340" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aMonsters" value="Zarządzanie potworami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="440" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aInstances" value="Zarządzanie instancjami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="540" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aItems" value="Zarządzanie przedmiotami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="640" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aEconomy" value="Zarządzanie ekonomią gry" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="740" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aMonitor" value="Monitorowanie gry" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1090" y="840" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aUpdates" value="Zarządzanie aktualizacjami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1390" y="340" width="240" height="60" as="geometry"/></mxCell>
+        <mxCell id="aSettings" value="Zarządzanie ustawieniami" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D9F2E2;strokeColor=#147A3E;fontSize=13;" vertex="1" parent="1"><mxGeometry x="1390" y="440" width="240" height="60" as="geometry"/></mxCell>
+
+        <!-- Admin detail boxes -->
+        <mxCell id="adUsers" value="Dodawanie / usuwanie&lt;br&gt;Edycja danych&lt;br&gt;Reset hasła&lt;br&gt;Blokada konta" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#F7FCF8;strokeColor=#147A3E;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="1390" y="240" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="adChars" value="Edycja statystyk&lt;br&gt;Zmiana klasy&lt;br&gt;Usuwanie postaci" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#F7FCF8;strokeColor=#147A3E;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="1390" y="340" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="adItems" value="Dodawanie przedmiotów&lt;br&gt;Edycja statystyk&lt;br&gt;Ustawianie rzadkości" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#F7FCF8;strokeColor=#147A3E;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="1390" y="640" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="adMonitor" value="Statystyki graczy&lt;br&gt;Logi systemowe&lt;br&gt;Raporty" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#F7FCF8;strokeColor=#147A3E;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="1390" y="840" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="adSettings" value="Konfiguracja gry&lt;br&gt;Ustawienia serwera&lt;br&gt;Zarządzanie banami" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#F7FCF8;strokeColor=#147A3E;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="1390" y="540" width="240" height="75" as="geometry"/></mxCell>
+
+        <!-- User include relationships -->
+        <mxCell id="eRegLogin" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uRegister" target="uLogin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eLoginSession" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uLogin" target="uSession"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eLoginProfile" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uLogin" target="uProfile"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eLoginEdit" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uLogin" target="uEdit"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eLoginPass" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uLogin" target="uPassword"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eDevStats" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uDevelop" target="uStats"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eDevLevel" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uDevelop" target="uLevel"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eInvBrowse" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uInventory" target="uBrowseInv"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eInvItems" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uInventory" target="uItems"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eFightCombat" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uFight" target="uCombat"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eInstRun" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uInstances" target="uInstanceRun"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eRewards" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uRewards" target="uExpGold"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eStatsHistory" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#1459A6;" edge="1" parent="1" source="uStatsView" target="uHistory"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- User actor associations -->
+        <mxCell id="au1" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uRegister"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au2" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uLogin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au3" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uLogout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au4" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uCreate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au5" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uDevelop"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au6" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uInventory"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au7" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uFight"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au8" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uInstances"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au9" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uRewards"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au10" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorUser" target="uStatsView"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Admin relationships -->
+        <mxCell id="eALogin" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#147A3E;" edge="1" parent="1" source="aLogin" target="aPerm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eAUsers" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#147A3E;" edge="1" parent="1" source="aUsers" target="adUsers"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eAChars" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#147A3E;" edge="1" parent="1" source="aChars" target="adChars"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eAItems" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#147A3E;" edge="1" parent="1" source="aItems" target="adItems"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eAMonitor" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#147A3E;" edge="1" parent="1" source="aMonitor" target="adMonitor"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eASettings" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=block;endFill=0;html=1;fontSize=11;strokeColor=#147A3E;" edge="1" parent="1" source="aSettings" target="adSettings"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="ad1" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aLogin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad2" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aUsers"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad3" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aChars"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad4" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aMonsters"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad5" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aInstances"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad6" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aItems"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad7" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aEconomy"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad8" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aMonitor"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad9" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aUpdates"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ad10" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;strokeColor=#333333;" edge="1" parent="1" source="actorAdmin" target="aSettings"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legenda:  ○ przypadek użycia   — aktor / asocjacja   - - -▶  &lt;&lt;include&gt;&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#777777;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="940" width="1180" height="35" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
