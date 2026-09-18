@@ -1,54 +1,134 @@
-Projekt Python – aplikacja z bazą danych
-Opis projektu
+# ⚔️ Królestwo Cieni
 
-Projekt przedstawia aplikację stworzoną w języku Python, której głównym zadaniem jest obsługa i przechowywanie danych w bazie danych.
+**Królestwo Cieni** to przeglądarkowa gra RPG, w której gracz rozwija swoją postać od 1 do 50 poziomu, walczy z potworami, zdobywa doświadczenie oraz przedmioty i przechodzi coraz trudniejsze instancje.
 
-Aplikacja składa się z głównego programu oraz modułu odpowiedzialnego za komunikację z bazą danych. Użytkownik może wykonywać operacje na danych za pomocą przygotowanego interfejsu aplikacji.
+## 🎮 Główne funkcje
 
-Projekt został wykonany w celach edukacyjnych w ramach nauki programowania, obsługi baz danych oraz pracy z systemem kontroli wersji Git.
+### 👤 System kont
+- Rejestracja użytkownika
+- Logowanie
+- Wylogowanie
+- Bezpieczne hashowanie haseł
+- Profil gracza
+- Edycja podstawowych danych
+- System sesji
 
-Technologie
-Python – główny język programowania
-SQLite – baza danych
-Git – system kontroli wersji
-GitHub – przechowywanie i udostępnianie kodu źródłowego
-Struktura projektu
-praca/
-├── main.py          # główny plik programu
-├── database.py      # obsługa połączenia z bazą danych
-├── database.db      # baza danych
-└── README.md        # dokumentacja projektu
+### 🧙 Postać
+Gracz może wybrać jedną z trzech klas:
 
-Baza danych
+- ⚔️ Wojownik
+- 🏹 Łucznik
+- 🔮 Mag
 
-Aplikacja korzysta z bazy danych SQLite, która umożliwia przechowywanie danych lokalnie w pliku database.db.
+Każda klasa posiada własne:
+- statystyki,
+- umiejętności,
+- wyposażenie,
+- sposób walki.
 
-Za komunikację z bazą danych odpowiada osobny moduł database.py. Dzięki temu kod odpowiedzialny za obsługę danych jest oddzielony od głównej logiki programu.
+Maksymalny poziom postaci: **50**.
 
-Uruchomienie projektu
+### 📈 Rozwój postaci
 
-Aby uruchomić aplikację, należy posiadać zainstalowanego Pythona.
+Za pokonywanie potworów i wykonywanie zadań gracz otrzymuje EXP.
 
-Następnie należy sklonować repozytorium:
+Po zdobyciu odpowiedniej ilości EXP postać awansuje na kolejny poziom.
 
-git clone https://github.com/bezrodzyneks-code/praca.git
+Podczas rozwoju zwiększają się m.in.:
 
+- HP
+- atak
+- obrona
+- siła
+- zręczność
+- inteligencja
 
-Przejść do katalogu projektu:
+### 👹 System potworów
 
-cd praca
+Każdy potwór posiada:
 
+- nazwę,
+- poziom,
+- HP,
+- atak,
+- obronę,
+- ilość przyznawanego EXP,
+- ilość złota,
+- tabelę możliwego dropu.
 
-Uruchomić program:
+Przykładowe potwory:
 
-python main.py
+| Potwór | Poziom |
+|---|---:|
+| Szczur | 1 |
+| Goblin | 5 |
+| Zombie | 10 |
+| Pająk | 15 |
+| Królowa Pająków | 20 |
+| Demon | 30 |
+| Smok Cienia | 40 |
+| Władca Ciemności | 50 |
 
-Autor
+### ⚔️ System walki
 
-Projekt wykonany w ramach nauki programowania w języku Python.
+Gracz może zaatakować potwora.
 
-Licencja
+Walka może przebiegać w turach:
 
-Projekt udostępniony jest na licencji MIT.
+1. Gracz wybiera akcję.
+2. Postać wykonuje atak.
+3. Potwór wykonuje kontratak.
+4. System sprawdza HP.
+5. Walka kończy się zwycięstwem lub porażką.
 
-Pełna treść licencji znajduje się w pliku LICENSE.
+Gracz może używać:
+
+- zwykłego ataku,
+- umiejętności,
+- mikstur,
+- przedmiotów specjalnych.
+
+### 🏰 Instancje
+
+Instancje są specjalnymi lokacjami zawierającymi grupy potworów oraz bossa.
+
+Przykładowe instancje:
+
+| Instancja | Wymagany poziom | Boss |
+|---|---:|---|
+| Kopalnia Goblinów | 5 | Wódz Goblinów |
+| Krypta Umarłych | 10 | Nekromanta |
+| Pajęcza Grota | 20 | Królowa Arachnidów |
+| Zamek Demonów | 30 | Książę Piekieł |
+| Smocze Pustkowie | 40 | Smok Popiołu |
+| Otchłań | 50 | Władca Ciemności |
+
+Każda instancja może posiadać trzy poziomy trudności:
+
+- Normalny
+- Trudny
+- Piekielny
+
+Wyższy poziom trudności zwiększa ryzyko, ale pozwala zdobyć lepsze nagrody.
+
+### 🎒 Ekwipunek
+
+Przedmioty posiadają różne statystyki i poziomy rzadkości:
+
+- ⚪ Zwykły
+- 🟢 Rzadki
+- 🔵 Magiczny
+- 🟣 Epicki
+- 🟠 Legendarny
+
+Przykładowy przedmiot:
+
+```text
+Miecz Płomienia
+
+Wymagany poziom: 20
+Obrażenia: +85
+Siła: +12
+Szansa podpalenia: 8%
+
+Rzadkość: LEGENDARNY
