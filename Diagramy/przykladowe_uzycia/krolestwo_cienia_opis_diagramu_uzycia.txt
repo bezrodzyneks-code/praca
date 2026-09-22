@@ -1,0 +1,155 @@
+================================================================================
+          SZCZEGÓŁOWE PRZYPADKI UŻYCIA – KRÓLESTWO CIENI
+================================================================================
+
+--------------------------------------------------------------------------------
+SYSTEM – STRONA UŻYTKOWNIKA (GRACZ)
+--------------------------------------------------------------------------------
+
+1. Logowanie
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Uzyskanie dostępu do konta w grze.
+   * Główny przebieg zdarzeń:
+     1. Gracz wprowadza dane logowania.
+     2. System weryfikuje tożsamość gracza.
+   * Powiązane przypadki użycia:
+     - <<include>> Rejestracja konta (wymagana przy braku konta)
+     - <<include>> Logowanie jest wywoływane dla podfunkcji: Zarządzanie sesją, 
+       Przeglądanie profilu, Edycja danych, Zmiana hasła
+
+2. Wylogowanie
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Bezpieczne zakończenie sesji w grze przez gracza.
+   * Główny przebieg zdarzeń:
+     1. Gracz wybiera opcję wylogowania.
+     2. System zamyka aktywną sesję.
+
+3. Tworzenie postaci
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Stworzenie nowego bohatera przypisanego do konta gracza.
+   * Główny przebieg zdarzeń:
+     1. Gracz przechodzi do kreatora postaci.
+     2. Gracz definiuje parametry postaci (np. nazwa, klasa).
+     3. System zapisuje nową postać na koncie.
+
+4. Rozwój postaci
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Podnoszenie poziomu i ulepszanie statystyk bohatera.
+   * Powiązane przypadki / podfunkcje (<<include>>):
+     - Zarządzanie statystykami
+     - Awans na kolejny poziom
+
+5. Ekwipunek
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Zarządzanie posiadanym wyposażeniem i przedmiotami gracza.
+   * Powiązane przypadki / podfunkcje (<<include>>):
+     - Przeglądanie ekwipunku
+     - Zarządzanie przedmiotami
+
+6. Walka z potworami
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Stoczenie pojedynku z przeciwnikiem w świecie gry.
+   * Powiązane przypadki użycia:
+     - <<include>> System walki
+     - <<extend>> System walki jest rozszerzany o akcje w trakcie walki:
+       * Atak
+       * Umiejętności
+       * Mikstury
+       * Przedmioty specjalne
+
+7. Uczestnictwo w instancjach
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Wejście i rozegranie dedykowanej lokacji/lochów.
+   * Powiązane przypadki / podfunkcje (<<include>>):
+     - Wybór instancji (z rozszerzeniem o parametry: Trudność [Normalny/Trudny/Piekielny] 
+       oraz Walka z bossem)
+     - Rozgrywka w instancji
+
+8. Zdobywanie nagród
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Otrzymanie gratyfikacji za ukończenie zadań lub wygrane walki.
+   * Powiązane przypadki / podfunkcje (<<include>>):
+     - Otrzymywanie EXP i złota
+     - Zdobywanie przedmiotów
+
+9. Sprawdzanie statystyk
+   * Aktor główny: Użytkownik (Gracz)
+   * Cel: Wgląd w osiągnięcia oraz historię aktywności postaci.
+   * Powiązane przypadki / podfunkcje (<<include>>):
+     - Historia walk i postępów
+
+
+--------------------------------------------------------------------------------
+SYSTEM – STRONA ADMINISTRATORA
+--------------------------------------------------------------------------------
+
+10. Logowanie do panelu administracyjnego
+    * Aktor główny: Administrator
+    * Cel: Autoryzacja uprawnień do zarządzania systemem gry.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Weryfikacja uprawnień
+
+11. Zarządzanie użytkownikami
+    * Aktor główny: Administrator
+    * Cel: Kontrola kont graczy zarejestrowanych w systemie.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Dodawanie / usuwanie
+      - Edycja danych
+      - Reset hasła
+      - Blokada konta
+
+12. Zarządzanie postaciami
+    * Aktor główny: Administrator
+    * Cel: Modyfikacja i nadzór nad bohaterami stworzonymi przez graczy.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Edycja statystyk
+      - Zmiana klasy
+      - Usuwanie postaci
+
+13. Zarządzanie potworami
+    * Aktor główny: Administrator
+    * Cel: Kreowanie i edycja przeciwników występujących w grze.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Dodawanie / edycja potworów
+
+14. Zarządzanie instancjami
+    * Aktor główny: Administrator
+    * Cel: Konfiguracja specjalnych stref i lochów w grze.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Dodawanie / edycja instancji
+
+15. Zarządzanie przedmiotami
+    * Aktor główny: Administrator
+    * Cel: Administracja bazą przedmiotów oraz ekwipunku w grze.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Dodawanie przedmiotów
+      - Edycja statystyk
+      - Ustawianie rzadkości
+
+16. Zarządzanie ekonomią gry
+    * Aktor główny: Administrator
+    * Cel: Balansowanie finansów oraz nagród przyznawanych w świecie gry.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Modyfikacja nagród
+
+17. Monitorowanie gry
+    * Aktor główny: Administrator
+    * Cel: Nadzór nad stabilnością systemu, działaniami graczy oraz generowanie raportów.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Statystyki graczy
+      - Logi systemowe
+      - Raporty
+
+18. Zarządzanie aktualizacjami
+    * Aktor główny: Administrator
+    * Cel: Wdrażanie nowych wersji oraz wydarzeń w grze.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Dodawanie treści i wydarzeń
+
+19. Zarządzanie ustawieniami
+    * Aktor główny: Administrator
+    * Cel: Ogólna konfiguracja techniczna oraz administracja serwerem.
+    * Powiązane przypadki / podfunkcje (<<include>>):
+      - Konfiguracja gry
+      - Ustawienia serwera
+      - Zarządzanie banami
