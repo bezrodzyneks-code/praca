@@ -2,6 +2,7 @@
 // Tryb online: pozycje graczy, czat (mapa / /g / /w), lista graczy, wspólne walki z potworami.
 const { WebSocketServer } = require('ws');
 const { CODE_TO_CLS } = require('./common');
+const cfg = require('./config');
 
 const clients = new Set();           // zalogowani (po 'join') gracze
 const deadMonsters = new Map();      // realmId -> Map(monsterId -> timestamp śmierci)
@@ -14,6 +15,31 @@ function countOnline(realmId) {
   let n = 0;
   for (const c of clients) if (c.realm.id === realmId) n++;
   return n;
+}
+
+const isStaff = (c) => c.role === 'admin' || c.role === 'moderator';
+const countAll = () => clients.size;
+const onlineAccounts = () => new Set([...clients].map((c) => c.accountId));
+const isCharOnline = (id) => [...clients].some((c) => c.charId === Number(id));
+const list = () => [...clients].map((c) => ({
+  account_id: c.accountId, char_id: c.charId, name: c.name, class: c.cls, level: c.level,
+  realm: c.realm.id, map: c.map, role: c.role,
+}));
+function broadcast(msg) {
+  let n = 0;
+  for (const c of clients) { send(c, { t: 'sys', msg }); n++; }
+  return n;
+}
+function dropClient(c, msg, code) {
+  send(c, { t: 'kicked', msg });
+  clients.delete(c);
+  c.ws.close(code || 4003, 'kicked');
+}
+function kickAccount(accountId, msg) {
+  for (const c of [...clients]) if (c.accountId === Number(accountId)) dropClient(c, msg);
+}
+function kickAll(msg, exceptStaff) {
+  for (const c of [...clients]) if (!(exceptStaff && isStaff(c))) dropClient(c, msg);
 }
 
 function kick(charId, msg) {
@@ -42,6 +68,13 @@ async function join(c, m) {
   const r = rows[0];
   if (!r) return c.ws.close(4003, 'char');
 
+  const settings = await cfg.get();
+  if (settings.server.maintenance && user.role !== 'admin' && user.role !== 'moderator') {
+    send(c, { t: 'kicked', msg: settings.server.maintenance_msg });
+    return c.ws.close(4003, 'maintenance');
+  }
+  const rules = await cfg.effectiveRules(r);
+
   // to samo konto zalogowane drugi raz -> stara sesja wylatuje
   for (const o of [...clients]) {
     if (o.accountId === user.id) {
@@ -55,11 +88,8 @@ async function join(c, m) {
   Object.assign(c, {
     joined: true, accountId: user.id, charId, id: String(charId),
     name: r.name, cls: CODE_TO_CLS[r.cls] || r.cls, level: r.level,
-    map: r.current_map, x: 0, y: 0, d: 'down', v: 0, a: 0, look: null, hadOthers: false,
-    realm: {
-      id: r.realm_id, name: r.rname,
-      rules: { xp: Number(r.exp_rate), drop: Number(r.drop_rate), death: Number(r.death_penalty) },
-    },
+    map: r.current_map, x: 0, y: 0, d: 'down', v: 0, a: 0, look: null, hadOthers: false, role: user.role,
+    realm: { id: r.realm_id, name: r.rname, rules },
   });
   clients.add(c);
 
@@ -69,9 +99,12 @@ async function join(c, m) {
 
   send(c, { t: 'joined', online: countOnline(r.realm_id), realm: { name: r.rname, rules: c.realm.rules }, dead });
   for (const o of clients) if (o !== c && o.realm.id === c.realm.id && o.look) send(c, { t: 'look', i: o.id, look: o.look });
+  if (settings.server.motd) send(c, { t: 'sys', msg: '📜 ' + settings.server.motd });
+  for (const e of settings.events) send(c, { t: 'sys', msg: `🎉 Trwa event: ${e.name} (EXP ×${e.exp_mult}, złoto ×${e.gold_mult}, drop ×${e.drop_mult})` });
 }
 
 function onChat(c, raw) {
+  if (cfg.peek().server.chat_enabled === false && !isStaff(c)) return send(c, { t: 'err', msg: 'Czat jest tymczasowo wyłączony.' });
   const text = String(raw || '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 200);
   if (!text) return;
   const now = Date.now();
@@ -204,4 +237,7 @@ function attach(server, d) {
   }, 60_000).unref();
 }
 
-module.exports = { attach, countOnline, kick };
+module.exports = {
+  attach, countOnline, countAll, onlineAccounts, isCharOnline, list, broadcast,
+  kick, kickChar: kick, kickAccount, kickAll,
+};

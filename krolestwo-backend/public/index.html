@@ -293,6 +293,110 @@ input[type=password]:focus{outline:2px solid var(--gold-dim);}
 #chat-input{width:100%; margin-top:2px; padding:5px 8px; font-size:.8em; background:rgba(8,6,14,.85); pointer-events:auto; opacity:.55;} #chat.focus #chat-input{opacity:1;}
 #chat .cl{word-break:break-word;}
 </style>
+
+<style id="kc-polish">
+/* ===== Królestwo Cieni — dodatkowa warstwa wizualna ===== */
+:root{--kc-gold:#e2c25a;--kc-gold2:#f6e08a;--kc-glass:rgba(22,17,36,.72);--kc-edge:rgba(160,140,220,.28)}
+::selection{background:rgba(226,194,90,.35)}
+html{scrollbar-color:#4a3f78 #0d0a16;scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#0d0a16}
+::-webkit-scrollbar-thumb{background:#3d3366;border-radius:6px;border:2px solid #0d0a16}::-webkit-scrollbar-thumb:hover{background:#5a4c94}
+
+/* tło menu: poświata + unoszące się iskry */
+body{background:
+  radial-gradient(900px 520px at 78% -8%,rgba(112,78,190,.34),transparent 62%),
+  radial-gradient(760px 480px at 8% 108%,rgba(160,48,70,.22),transparent 60%),
+  radial-gradient(1200px 700px at 50% 50%,#150f24 0%,#07050d 80%)!important}
+body::before,body::after{content:"";position:fixed;left:0;right:0;pointer-events:none;z-index:0;height:130%;top:-15%}
+body::before{opacity:.55;animation:kcEmbers 26s linear infinite;background-image:
+  radial-gradient(2px 2px at 8% 88%,rgba(255,176,80,.95),transparent 60%),radial-gradient(1.5px 1.5px at 19% 72%,rgba(255,140,60,.8),transparent 60%),
+  radial-gradient(2.5px 2.5px at 31% 93%,rgba(255,200,110,.9),transparent 60%),radial-gradient(1.5px 1.5px at 44% 78%,rgba(255,130,70,.85),transparent 60%),
+  radial-gradient(2px 2px at 57% 90%,rgba(255,180,90,.9),transparent 60%),radial-gradient(1.5px 1.5px at 66% 68%,rgba(255,150,60,.75),transparent 60%),
+  radial-gradient(2.5px 2.5px at 78% 84%,rgba(255,196,100,.9),transparent 60%),radial-gradient(1.5px 1.5px at 90% 74%,rgba(255,140,70,.8),transparent 60%)}
+body::after{opacity:.35;animation:kcEmbers 40s linear infinite reverse;background-image:
+  radial-gradient(1.5px 1.5px at 14% 60%,rgba(190,160,255,.8),transparent 60%),radial-gradient(2px 2px at 36% 82%,rgba(190,160,255,.7),transparent 60%),
+  radial-gradient(1.5px 1.5px at 52% 64%,rgba(160,200,255,.7),transparent 60%),radial-gradient(2px 2px at 73% 92%,rgba(190,160,255,.75),transparent 60%),
+  radial-gradient(1.5px 1.5px at 94% 66%,rgba(160,200,255,.7),transparent 60%)}
+@keyframes kcEmbers{from{transform:translateY(7%)}to{transform:translateY(-12%)}}
+.wrap{position:relative;z-index:1}
+
+/* panele jak szkło z ozdobnym narożnikiem */
+.panel{background:linear-gradient(180deg,rgba(34,27,56,.88),rgba(17,13,29,.92))!important;border-color:var(--kc-edge)!important;
+  backdrop-filter:blur(10px);box-shadow:0 28px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.03) inset,0 1px 0 rgba(255,255,255,.07) inset!important;
+  border-radius:14px;animation:kcRise .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes kcRise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+
+/* tytuł */
+.title-block h1{font-size:clamp(30px,5vw,44px)!important;letter-spacing:.07em;
+  background:linear-gradient(180deg,#fff3c0 0%,#e2c25a 45%,#9a7420 100%);-webkit-background-clip:text;background-clip:text;color:transparent!important;
+  text-shadow:none!important;filter:drop-shadow(0 2px 14px rgba(226,194,90,.35));animation:kcGlow 4.5s ease-in-out infinite}
+@keyframes kcGlow{0%,100%{filter:drop-shadow(0 2px 12px rgba(226,194,90,.28))}50%{filter:drop-shadow(0 2px 22px rgba(226,194,90,.6))}}
+.title-block h1::after{content:"◆";display:block;font-size:11px;letter-spacing:0;margin-top:8px;color:var(--kc-gold);opacity:.85;
+  background:none;-webkit-text-fill-color:var(--kc-gold)}
+.title-block p{letter-spacing:.04em}
+
+/* pola formularzy (także hasło / e-mail) */
+input[type=text],input[type=password],input[type=email],select{background:rgba(8,6,14,.78)!important;border-radius:9px;
+  transition:border-color .18s,box-shadow .18s,background .18s}
+input[type=password],input[type=email]{width:100%;padding:10px 12px;border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:1em;outline:none}
+input[type=text]:focus,input[type=password]:focus,input[type=email]:focus,select:focus{border-color:var(--kc-gold)!important;
+  box-shadow:0 0 0 3px rgba(226,194,90,.16),0 0 18px rgba(226,194,90,.12)!important}
+
+/* przyciski */
+button{border-radius:9px;transition:transform .15s,box-shadow .2s,filter .2s,border-color .2s,background .2s;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.07),transparent 55%)}
+button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 14px rgba(226,194,90,.18);filter:brightness(1.12)}
+button:active:not(:disabled){transform:translateY(0);filter:brightness(.95)}
+button.primary{box-shadow:0 4px 18px rgba(176,52,70,.38),inset 0 1px 0 rgba(255,255,255,.18)}
+button.primary:hover:not(:disabled){box-shadow:0 8px 26px rgba(205,64,84,.5),inset 0 1px 0 rgba(255,255,255,.22)}
+
+/* karty klas */
+.classcard{border-radius:12px;transition:transform .2s,box-shadow .25s,border-color .2s;position:relative;overflow:hidden}
+.classcard::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(226,194,90,.16),transparent 65%);opacity:0;transition:opacity .25s;pointer-events:none}
+.classcard:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.5)}.classcard:hover::after,.classcard.sel::after{opacity:1}
+.classcard.sel{box-shadow:0 0 0 2px var(--kc-gold),0 0 30px rgba(226,194,90,.35)}
+
+/* paski: połysk */
+.bar{border-radius:99px;box-shadow:inset 0 1px 3px rgba(0,0,0,.6)}
+.bar>i{position:relative;overflow:hidden;border-radius:99px}
+.bar>i::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.34) 50%,transparent 70%);
+  transform:translateX(-100%);animation:kcShine 3.6s ease-in-out infinite}
+@keyframes kcShine{60%,100%{transform:translateX(100%)}}
+
+/* HUD w świecie gry */
+#hud-stats,#hud-gold,#hud-quest,#minimap-wrap{background:var(--kc-glass)!important;backdrop-filter:blur(7px);border:1px solid var(--kc-edge)!important;
+  border-radius:12px!important;box-shadow:0 8px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)!important}
+#hud-menu-btns button{background-color:var(--kc-glass)!important;backdrop-filter:blur(6px);border-radius:10px}
+#hud-menu-btns button:hover:not(:disabled){border-color:var(--kc-gold)!important}
+#hud-gold{color:var(--kc-gold2)!important;text-shadow:0 0 10px rgba(226,194,90,.4)}
+#hud-stats .hn span.lvl{text-shadow:0 0 10px rgba(226,194,90,.6)}
+#map-banner .bt{text-shadow:0 0 28px rgba(226,194,90,.55),0 3px 12px #000}
+
+/* okna */
+.wmodal{backdrop-filter:blur(5px)}
+.wmodal-box{background:linear-gradient(180deg,rgba(36,29,58,.97),rgba(16,12,28,.98))!important;border-color:var(--kc-edge)!important;border-radius:14px!important;
+  box-shadow:0 30px 90px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.07)!important;animation:kcRise .28s cubic-bezier(.2,.8,.2,1)}
+.wmodal-close{transition:transform .2s,background .2s}.wmodal-close:hover{transform:rotate(90deg)}
+.shop-tabs button.active{box-shadow:0 0 14px rgba(226,194,90,.25)}
+
+/* ekwipunek i przedmioty */
+.slot{border-radius:9px;transition:transform .15s,box-shadow .2s,border-color .2s}.slot:hover{transform:scale(1.07);box-shadow:0 0 16px rgba(226,194,90,.3);border-color:var(--kc-gold)}
+.itemname.rare{text-shadow:0 0 10px rgba(80,200,110,.45)}.itemname.epic{text-shadow:0 0 12px rgba(196,127,232,.55)}
+.itemrow{transition:background .15s}.itemrow:hover{background:rgba(255,255,255,.035)}
+.bcard{transition:transform .2s,box-shadow .2s}.bcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.diffbtn{transition:transform .15s,box-shadow .2s}.diffbtn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.45)}
+.toast{border-radius:11px;backdrop-filter:blur(8px);box-shadow:0 12px 36px rgba(0,0,0,.6)}
+
+/* komunikaty serwera (konserwacja, eventy, aktualizacje) */
+#kc-news{display:grid;gap:8px;margin:0 0 14px}
+#kc-news:empty{display:none}
+.kc-note{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-radius:10px;font-size:14px;line-height:1.4;
+  border:1px solid rgba(226,194,90,.4);background:linear-gradient(90deg,rgba(226,194,90,.14),rgba(226,194,90,.04));color:#f3e3a6}
+.kc-note.bad{border-color:rgba(205,64,84,.55);background:linear-gradient(90deg,rgba(205,64,84,.2),rgba(205,64,84,.05));color:#ffb3bd}
+.kc-note.info{border-color:rgba(130,150,255,.4);background:linear-gradient(90deg,rgba(130,150,255,.14),rgba(130,150,255,.04));color:#cfd6ff}
+.kc-note b{display:block;font-family:inherit}
+@media (prefers-reduced-motion:reduce){body::before,body::after,.title-block h1,.bar>i::after{animation:none!important}}
+</style>
 </head>
 <body>
 <div class="wrap" id="wrap-panels">
@@ -300,7 +404,7 @@ input[type=password]:focus{outline:2px solid var(--gold-dim);}
 <div id="screen-login" class="panel">
   <div class="title-block"><h1>Królestwo Cieni</h1><p>Mroczna kraina czeka na swojego bohatera</p></div>
   <div class="mode-tabs"><button id="tab-online" class="active">Gra online</button><button id="tab-offline">Tryb offline</button></div>
-  <div id="login-online">
+  <div id="login-online"><div id="kc-news"></div>
     <label for="srv-url">Adres serwera</label>
     <input type="text" id="srv-url" placeholder="http://localhost:8080" autocomplete="off" spellcheck="false">
     <label for="on-user">Login</label>
@@ -705,6 +809,7 @@ function newHero(name,cls){
     hp:b.hp,maxHp:b.hp,mp:b.mp,maxMp:b.mp,atk:b.atk,def:b.def,
     inventory:[{id:'potion1',name:'Mikstura Zdrowia',rarity:'potion',heal:30}], history:[]};
 }
+function goldMul(){ return (typeof NET!=='undefined'&&NET.rules&&NET.rules.gold)||1; }
 function gainExp(amount){
   S.hero.exp+=Math.round(amount*((typeof NET!=='undefined'&&NET.rules&&NET.rules.xp)||1));
   let leveled=false;
@@ -3302,7 +3407,7 @@ function instAction(action){
 function advanceInstance(){
   const c=inst.current;
   logInst('Pokonano: '+c.name+'!','win');
-  gainExp(c.exp); S.hero.gold+=c.gold;
+  gainExp(c.exp); S.hero.gold+=Math.round(c.gold*goldMul());
   const drop=randomDrop(0.3);
   if(drop){ giveItem(drop); logInst('Zdobyto przedmiot: '+drop.name,'win'); }
   inst.stage++;
@@ -3413,7 +3518,7 @@ function killMonster(m){
   if(m.boss){ shake(9,.9); hitstop=.25; for(let k=0;k<3;k++) pEmit({type:'ring',x:m.x*TILE+16,y:m.y*TILE+16,life:.9+k*.25,size:8,max:60+k*30,col:'#ffd860'}); }
 }
 function resolveKill(mr){
-  const tpl=mr.def; gainExp(tpl.exp); S.hero.gold+=tpl.gold;
+  const tpl=mr.def; gainExp(tpl.exp); S.hero.gold+=Math.round(tpl.gold*goldMul());
   const dropChance=mr.boss?1:(mr.elite?0.75:0.35);
   const drop=randomDrop(Math.min(1,dropChance*((typeof NET!=='undefined'&&NET.rules&&NET.rules.drop)||1)));
   if(drop){ world.groundItems.push({x:Math.round(mr.x),y:Math.round(mr.y),item:drop,id:'drop_'+Date.now()+'_'+Math.random()}); fxLoot(mr.x*TILE+16,mr.y*TILE+16,drop.rarity); }
@@ -4720,6 +4825,34 @@ window.addEventListener('keydown',e=>{
    ONLINE: konta, wybór serwera gry, postacie w bazie danych,
    gracze w czasie rzeczywistym, czat, wspólne walki z potworami
    ============================================================ */
+
+/* ---------- konfiguracja z serwera: wartości z panelu admina + komunikaty ---------- */
+async function netApplyConfig(){
+  try{
+    const r=await fetch((NET.base||'')+'/api/config'); if(!r.ok) return; const c=await r.json();
+    (c.monsters||[]).forEach(m=>{ const d=MONSTER_DEFS[m.code]; if(!d) return;
+      ['name','lvl','hp','atk','exp','gold'].forEach(k=>{ if(m[k]!==undefined&&m[k]!==null) d[k]=m[k]; }); });
+    (c.items||[]).forEach(o=>{ const it=ITEM_POOL.find(x=>x.id===o.id); if(!it) return;
+      if(o.name) it.name=o.name;
+      if('atk' in it&&Number.isFinite(o.atk)) it.atk=o.atk;
+      if('def' in it&&Number.isFinite(o.def)) it.def=o.def;
+      if('price' in it&&o.price>0) it.price=o.price; });
+    NET.config=c; netRenderNews(c);
+  }catch(e){ /* tryb offline lub serwer niedostępny */ }
+}
+function netRenderNews(c){
+  const box=document.getElementById('kc-news'); if(!box) return;
+  const mk=(cls,t,txt)=>{ const d=document.createElement('div'); d.className='kc-note '+cls;
+    const i=document.createElement('span'); i.textContent=cls==='bad'?'🛠':cls==='info'?'📜':'🎉';
+    const b=document.createElement('div'); const h=document.createElement('b'); h.textContent=t; b.appendChild(h);
+    if(txt){ const p=document.createElement('span'); p.textContent=txt; b.appendChild(p); }
+    d.appendChild(i); d.appendChild(b); return d; };
+  box.textContent='';
+  if(c.maintenance) box.appendChild(mk('bad','Prace techniczne',c.maintenance_msg));
+  (c.events||[]).forEach(e=>box.appendChild(mk('', e.name, 'EXP ×'+e.exp_mult+' • złoto ×'+e.gold_mult+' • drop ×'+e.drop_mult+' — do '+new Date(e.ends_at).toLocaleString('pl-PL',{dateStyle:'short',timeStyle:'short'}))));
+  if(c.motd) box.appendChild(mk('info','Wiadomość dnia',c.motd));
+  if(c.updates&&c.updates[0]) box.appendChild(mk('info','Aktualizacja '+c.updates[0].version+': '+c.updates[0].title,''));
+}
 const NET={ base:'', token:null, user:null, ws:null, online:false, connected:false, leaving:false, realm:null, realms:[], maxChars:3, charId:null, creating:false,
   others:{}, looks:{}, rules:{xp:1,drop:1,death:0.1}, saveTimer:null, saving:false, ping:0, onlineCount:0, whoList:[], retry:0, posT:0, lookT:0, lastPos:'', lastPosAt:0, lookStr:'', hudT:0, pingT:0 };
 function defaultServerUrl(){ try{ const sv=localStorage.getItem('kc_server'); if(sv) return sv; }catch(e){} return /^https?:$/.test(location.protocol)?location.origin:'http://localhost:8080'; }
@@ -4744,7 +4877,7 @@ function setLoginTab(online){
 async function probeServer(){
   const url=normUrl($('srv-url').value); if(!url){ onMsg('Wpisz adres serwera.',true); return false; }
   NET.base=url; onMsg('Sprawdzanie serwera…');
-  try{ const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),3500); const r=await fetch(url+'/api/health',{signal:ctrl.signal}); clearTimeout(t); const j=await r.json(); if(j&&j.ok){ onMsg('Serwer dostępny ✓ ('+(j.db==='postgres'?'PostgreSQL':'SQLite')+').'); $('on-msg').style.color='#7fc48a'; return true; } }catch(e){}
+  try{ const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),3500); const r=await fetch(url+'/api/health',{signal:ctrl.signal}); clearTimeout(t); const j=await r.json(); if(j&&j.ok){ { const _b=NET.base; NET.base=url; netApplyConfig().finally(()=>{ NET.base=_b; }); } onMsg('Serwer dostępny ✓ ('+(j.db==='postgres'?'PostgreSQL':'SQLite')+').'); $('on-msg').style.color='#7fc48a'; return true; } }catch(e){}
   onMsg('Brak serwera pod tym adresem. Uruchom serwer albo wybierz „Tryb offline”.',true); return false;
 }
 async function onlineAuth(register){
@@ -4798,7 +4931,7 @@ async function playCharacter(id,name){
   try{
     const j=await api('/api/characters/'+id);
     S=j.data; S.account=NET.user; S.charId=id; S.hero.name=j.name; ensureWorldState();
-    NET.charId=id; NET.rules=Object.assign({xp:1,drop:1,death:0.1},NET.realm.rules||{});
+    NET.charId=id; NET.rules=Object.assign({xp:1,drop:1,gold:1,death:0.1},NET.realm.rules||{}); netApplyConfig();
     enterOnlineGame();
   }catch(e){ toast(e.message); }
 }
@@ -4807,7 +4940,7 @@ async function onlineCreate(name,cls){
     const hero=newHero(name,cls); const st={account:NET.user,hero:hero,world:defaultWorldState()};
     const j=await api('/api/characters','POST',{realm:NET.realm.id,name:name,cls:cls,data:st});
     S=st; S.charId=j.id; S.hero.name=j.name; ensureWorldState();
-    NET.charId=j.id; NET.creating=false; NET.rules=Object.assign({xp:1,drop:1,death:0.1},NET.realm.rules||{});
+    NET.charId=j.id; NET.creating=false; NET.rules=Object.assign({xp:1,drop:1,gold:1,death:0.1},NET.realm.rules||{}); netApplyConfig();
     enterOnlineGame();
   }catch(e){ toast(e.message); }
 }
@@ -4875,7 +5008,7 @@ function netMyLook(){ const l=buildPlayerLook(), o={}; SAFE_LOOK_KEYS.forEach(k=
 function netHandle(m){
   switch(m.t){
     case 'joined': {
-      NET.connected=true; NET.retry=0; NET.onlineCount=m.online; if(m.realm&&m.realm.rules) NET.rules=Object.assign({xp:1,drop:1,death:0.1},m.realm.rules);
+      NET.connected=true; NET.retry=0; NET.onlineCount=m.online; if(m.realm&&m.realm.rules) NET.rules=Object.assign({xp:1,drop:1,gold:1,death:0.1},m.realm.rules);
       (m.dead||[]).forEach(d=>{ netMarkDead(d.id,Date.now()-d.age); });
       addChat('sys','','Połączono z serwerem „'+m.realm.name+'”. Online: '+m.online+'. Wpisz /g, aby pisać do wszystkich.');
       NET.lookStr=''; NET.lastPos=''; break; }
@@ -4916,7 +5049,7 @@ function netRemoteKill(id,by,silent){
   m.dead=true; m.curHp=0; m.tele=null; corpses.push({def:m.def,x:m.x,y:m.y,dir:m.dir,t:0,life:.9,boss:m.boss});
   if(combat&&combat.monster===m){ logFight('Ktoś inny pokonał przeciwnika.'); endWorldCombat(false,true); }
   if(contributed&&!silent){
-    const exp=Math.round(m.def.exp*0.6*(NET.rules.xp||1)), gold=Math.round(m.def.gold*0.6);
+    const exp=Math.round(m.def.exp*0.6*(NET.rules.xp||1)), gold=Math.round(m.def.gold*0.6*goldMul());
     gainExp(Math.round(m.def.exp*0.6)); S.hero.gold+=gold; S.world.kills[m.tpl]=(S.world.kills[m.tpl]||0)+1;
     if(m.boss){ S.world.flags[m.id]=true; progressQuest('q_shadowlord','boss',m.id); }
     checkAllKillQuestsOnMonsterDeath(m.tpl);

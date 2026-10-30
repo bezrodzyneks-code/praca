@@ -51,3 +51,15 @@ Limity: logowanie 15 prób/min, rejestracja 10/min na IP; czat max 1 wiadomość
 - Klasa **Łotr** z gry jest w bazie zapisana jako **Łucznik** (kod `archer`); serwer tłumaczy nazwy w obie strony.
 - Cała baza jest w schemacie `kc`.
 - W produkcji: postaw serwer za HTTPS (np. nginx/Caddy — WebSocket przejdzie jako `wss://`) i ustaw `CORS_ORIGIN`.
+
+## Gra z innego urządzenia w tej samej sieci (LAN)
+
+1. Uruchom serwer — w konsoli zobaczysz linię `Inne urządzenia (Wi-Fi): http://192.168.x.x:8080`.
+2. Windows: otwórz port w zaporze (PowerShell **jako administrator**):
+   `netsh advfirewall firewall add rule name="Krolestwo Cieni" dir=in action=allow protocol=TCP localport=8080 profile=private`
+   Sieć Wi-Fi musi być ustawiona jako **Prywatna** (Ustawienia → Sieć → Wi-Fi → właściwości).
+3. Na telefonie / drugim komputerze (ten sam Wi-Fi) wpisz w przeglądarce ten adres IP z konsoli.
+
+## Panel administratora
+
+Pełny panel zarządzania (konta, postacie, potwory, przedmioty, instancje, ekonomia, eventy, aktualizacje, logi, raporty, ustawienia) pod `/admin/`. Instrukcja uruchomienia i opis funkcji: **[ADMIN.md](ADMIN.md)**.
