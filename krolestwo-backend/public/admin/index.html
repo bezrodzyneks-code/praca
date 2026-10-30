@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Panel administratora — Królestwo Cieni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- SVG: gradient dla wykresów + ikony -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0d77a"/><stop offset="1" stop-color="#8a7220"/></linearGradient>
+    <linearGradient id="gBar2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9a8ff"/><stop offset="1" stop-color="#4a3a88"/></linearGradient>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.2 4.5 3 5.7V20h10v-3.3c1.8-1.2 3-3.1 3-5.7a8 8 0 0 0-8-8z"/><circle cx="9" cy="11" r="1.4"/><circle cx="15" cy="11" r="1.4"/><path d="M10 20v-2M14 20v-2"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+    <symbol id="i-gate" viewBox="0 0 24 24"><path d="M4 21V10a8 8 0 0 1 16 0v11z"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.8 1.8 0 0 1 0 3.5h-3a1.8 1.8 0 0 0 0 3.5h4"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h8"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ LOGOWANIE ============ -->
+<section id="login" class="hidden">
+  <div class="login-card">
+    <div class="crest">⚔️</div>
+    <h1>Królestwo Cieni</h1>
+    <p class="sub">Panel administracyjny — tylko dla personelu</p>
+    <label class="f" for="lg-user">Login</label>
+    <input id="lg-user" autocomplete="username" spellcheck="false">
+    <label class="f" for="lg-pass" style="margin-top:14px">Hasło</label>
+    <input id="lg-pass" type="password" autocomplete="current-password">
+    <button id="lg-btn" class="btn gold block" style="margin-top:20px">Zaloguj do panelu</button>
+    <div id="lg-err" class="login-err"></div>
+  </div>
+</section>
+
+<!-- ============ APLIKACJA ============ -->
+<div id="app" class="hidden">
+  <aside id="side">
+    <div class="brand">
+      <div class="crest">⚔️</div>
+      <div><b>Królestwo Cieni</b><small>Panel admina</small></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="me">
+      <div class="avatar" id="me-av">A</div>
+      <div style="min-width:0"><div class="nm" id="me-nm">—</div><div class="rl" id="me-rl">—</div></div>
+      <button class="btn ghost icon" id="btn-logout" title="Wyloguj"><svg><use href="#i-out"/></svg></button>
+    </div>
+  </aside>
+  <main>
+    <header class="top">
+      <button class="btn ghost icon" id="burger"><svg><use href="#i-menu"/></svg></button>
+      <div><div class="crumb" id="crumb">Panel</div><h2 id="title">Przegląd</h2></div>
+      <div class="spacer"></div>
+      <span class="pill" id="pill-maint" style="display:none"><span class="dot warn"></span>Konserwacja</span>
+      <span class="pill" id="pill-online"><span class="dot"></span><span id="online-n">0</span> online</span>
+      <button class="btn ghost icon" id="btn-reload" title="Odśwież widok"><svg><use href="#i-refresh"/></svg></button>
+    </header>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div id="toasts"></div>
+
+<script src="core.js"></script>
+<script src="views-people.js"></script>
+<script src="views-content.js"></script>
+<script src="views-system.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>

@@ -6,19 +6,24 @@ const http = require('http');
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+types.setTypeParser(20, (v) => Number(v));      // bigint -> number (liczniki, id)
+types.setTypeParser(1700, (v) => parseFloat(v)); // numeric -> number
 const { CLS_TO_CODE, CODE_TO_CLS, sha256, HttpError } = require('./common');
 const realtime = require('./realtime');
+const cfg = require('./config');
+const createAdminRouter = require('./admin');
 
 const PORT = Number(process.env.PORT) || 8080;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://kc:kc_password@localhost:5432/krolestwo',
   ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  options: '-c search_path=kc,public',
   max: 10,
 });
-pool.on('connect', (c) => c.query('SET search_path TO kc, public'));
 pool.on('error', (e) => console.error('[pg] błąd połączenia:', e.message));
+cfg.init(pool);
 
 const app = express();
 app.set('trust proxy', 1);
@@ -63,13 +68,14 @@ async function createSession(accountId, req) {
 async function authFromToken(token) {
   if (!token || typeof token !== 'string') return null;
   const { rows } = await pool.query(
-    `SELECT a.id, a.username, a.is_banned, a.max_characters, s.id AS session_id
+    `SELECT a.id, a.username, a.role, a.max_characters, s.id AS session_id,
+            (a.is_banned AND (a.banned_until IS NULL OR a.banned_until > now())) AS banned
        FROM sessions s JOIN accounts a ON a.id = s.account_id
       WHERE s.token_hash = $1 AND s.revoked_at IS NULL AND s.expires_at > now()`,
     [sha256(token)]
   );
   const u = rows[0];
-  if (!u || u.is_banned) return null;
+  if (!u || u.banned) return null;
   pool.query(
     `UPDATE sessions SET last_seen_at = now() WHERE id = $1 AND last_seen_at < now() - INTERVAL '5 minutes'`,
     [u.session_id]
@@ -117,19 +123,22 @@ async function applySave(db, charId, accountId, data) {
   const py = Math.max(-9999, Math.min(9999, Number(w.y) || 0));
 
   const cur = await db.query(
-    'SELECT level FROM characters WHERE id = $1 AND account_id = $2 AND deleted_at IS NULL FOR UPDATE',
+    'SELECT level, force_reload FROM characters WHERE id = $1 AND account_id = $2 AND deleted_at IS NULL FOR UPDATE',
     [charId, accountId]
   );
   if (!cur.rows[0]) throw new HttpError(404, 'Nie znaleziono postaci.');
+  if (cur.rows[0].force_reload) {
+    throw new HttpError(409, 'Administrator zmodyfikował Twoją postać — odśwież stronę i wczytaj ją ponownie.');
+  }
   const oldLevel = cur.rows[0].level;
 
   await db.query(
     `UPDATE characters ch SET
-        level = $3, exp = $4, gold = $5, hp = $6, max_hp = $7, mp = $8, max_mp = $9,
+        level = $3::int, exp = $4, gold = $5, hp = $6, max_hp = $7, mp = $8, max_mp = $9,
         atk = $10, def = $11,
-        str = c.base_str + c.str_per_level * ($3 - 1),
-        dex = c.base_dex + c.dex_per_level * ($3 - 1),
-        int = c.base_int + c.int_per_level * ($3 - 1),
+        str = c.base_str + c.str_per_level * ($3::int - 1),
+        dex = c.base_dex + c.dex_per_level * ($3::int - 1),
+        int = c.base_int + c.int_per_level * ($3::int - 1),
         monsters_killed = GREATEST($12, 0), current_map = $13, pos_x = $14, pos_y = $15,
         save_data = $16::jsonb, last_saved_at = now()
        FROM classes c
@@ -185,6 +194,7 @@ app.post('/api/register', limit(10, 60_000), wrap(async (req, res) => {
   if (typeof password !== 'string' || password.length < 6 || password.length > 72) {
     throw new HttpError(400, 'Hasło musi mieć od 6 do 72 znaków.');
   }
+  if (!(await cfg.get()).server.registration_open) throw new HttpError(403, 'Rejestracja nowych kont jest tymczasowo wyłączona.');
   const hash = await bcrypt.hash(password, 12);
   let id;
   try {
@@ -197,6 +207,7 @@ app.post('/api/register', limit(10, 60_000), wrap(async (req, res) => {
     if (e.code === '23505') throw new HttpError(409, 'Ten login jest już zajęty.');
     throw e;
   }
+  cfg.log('info', 'auth', `Rejestracja konta: ${username}`, { ip: req.ip });
   res.json({ token: await createSession(id, req), username });
 }));
 
@@ -205,15 +216,24 @@ app.post('/api/login', limit(15, 60_000), wrap(async (req, res) => {
   const { username, password } = req.body || {};
   if (typeof username !== 'string' || typeof password !== 'string') throw new HttpError(400, 'Podaj login i hasło.');
   const { rows } = await pool.query(
-    'SELECT id, username, password_hash, is_banned, ban_reason FROM accounts WHERE lower(username) = lower($1)',
+    'SELECT id, username, password_hash, role, is_banned, ban_reason, banned_until FROM accounts WHERE lower(username) = lower($1)',
     [username.slice(0, 24)]
   );
   const acc = rows[0];
   const ok = await bcrypt.compare(password.slice(0, 72), acc ? acc.password_hash : DUMMY_HASH);
-  if (!acc || !ok) throw new HttpError(401, 'Nieprawidłowy login lub hasło.');
-  if (acc.is_banned) throw new HttpError(403, 'Konto zablokowane' + (acc.ban_reason ? ': ' + acc.ban_reason : '.'));
+  if (!acc || !ok) {
+    cfg.log('warn', 'auth', `Nieudane logowanie: ${username.slice(0, 24)}`, { ip: req.ip });
+    throw new HttpError(401, 'Nieprawidłowy login lub hasło.');
+  }
+  if (acc.is_banned && (!acc.banned_until || new Date(acc.banned_until) > new Date())) {
+    const until = acc.banned_until ? ' (do ' + new Date(acc.banned_until).toLocaleString('pl-PL') + ')' : '';
+    throw new HttpError(403, 'Konto zablokowane' + until + (acc.ban_reason ? ': ' + acc.ban_reason : '.'));
+  }
+  const st = await cfg.get();
+  if (st.server.maintenance && acc.role !== 'admin' && acc.role !== 'moderator') throw new HttpError(503, st.server.maintenance_msg);
   await pool.query('UPDATE accounts SET last_login_at = now() WHERE id = $1', [acc.id]);
-  res.json({ token: await createSession(acc.id, req), username: acc.username });
+  cfg.log('info', 'auth', `Logowanie: ${acc.username}`, { ip: req.ip, role: acc.role });
+  res.json({ token: await createSession(acc.id, req), username: acc.username, role: acc.role });
 }));
 
 app.post('/api/logout', auth, wrap(async (req, res) => {
@@ -260,11 +280,11 @@ app.get('/api/realms', auth, wrap(async (req, res) => {
        FROM realms WHERE is_active ORDER BY name`);
   res.json({
     maxChars: req.user.max_characters,
-    realms: rows.map((r) => ({
+    realms: await Promise.all(rows.map(async (r) => ({
       id: r.id, name: r.name, desc: r.description || '',
       online: realtime.countOnline(r.id), max: r.max_players,
-      rules: { xp: Number(r.exp_rate), drop: Number(r.drop_rate), death: Number(r.death_penalty) },
-    })),
+      rules: await cfg.effectiveRules(r),
+    }))),
   });
 }));
 
@@ -287,6 +307,7 @@ app.get('/api/characters/:id', auth, wrap(async (req, res) => {
   );
   const c = rows[0];
   if (!c) throw new HttpError(404, 'Nie znaleziono postaci.');
+  if (c.force_reload) await pool.query('UPDATE characters SET force_reload = FALSE WHERE id = $1', [c.id]);
   let data = c.save_data;
   if (!data) { // postać utworzona poza grą (np. z SQL) — zbuduj minimalny zapis
     data = {
@@ -351,6 +372,29 @@ app.get('/api/ranking', wrap(async (req, res) => {
   res.json({ ranking: rows });
 }));
 
+// Publiczna konfiguracja gry: ustawienia serwera, ekonomia, eventy, aktualizacje oraz
+// wartości potworów i przedmiotów z bazy (nadpisują domyślne w kliencie).
+app.get('/api/config', wrap(async (req, res) => {
+  const s = await cfg.get();
+  const [mon, items, upd] = await Promise.all([
+    pool.query('SELECT code, name, level, hp, atk, exp_reward, gold_min, gold_max FROM monsters'),
+    pool.query('SELECT code, name, atk, def, buy_price FROM items'),
+    pool.query(`SELECT version, title, body, published_at FROM game_updates WHERE status = 'published'
+                 ORDER BY published_at DESC NULLS LAST, id DESC LIMIT 3`),
+  ]);
+  res.json({
+    maintenance: s.server.maintenance, maintenance_msg: s.server.maintenance_msg,
+    registration_open: s.server.registration_open, motd: s.server.motd, chat_enabled: s.server.chat_enabled,
+    economy: s.economy, events: s.events, updates: upd.rows,
+    monsters: mon.rows.map((m) => ({ code: m.code, name: m.name, lvl: m.level, hp: m.hp, atk: m.atk,
+      exp: m.exp_reward, gold: Math.round((m.gold_min + m.gold_max) / 2) })),
+    items: items.rows.map((i) => ({ id: i.code, name: i.name, atk: i.atk, def: i.def, price: i.buy_price })),
+  });
+}));
+
+// ---------- panel administratora ----------
+app.use('/api/admin', createAdminRouter({ pool, auth, realtime, startedAt: new Date().toISOString() }));
+
 // ---------- frontend (opcjonalnie: ten sam origin co gra) ----------
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -361,13 +405,30 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   if (err && err.type === 'entity.too.large') return res.status(413).json({ error: 'Zapis jest zbyt duży.' });
   if (err && err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Nieprawidłowy JSON.' });
   console.error('[błąd]', err);
+  cfg.log('error', 'server', err && err.message ? err.message : 'Nieznany błąd', { path: req.path, method: req.method });
   res.status(500).json({ error: 'Błąd serwera.' });
 });
 
 const server = http.createServer(app);
 realtime.attach(server, { pool, auth: authFromToken });
 
-server.listen(PORT, () => console.log(`⚔️  Królestwo Cieni — serwer działa: http://localhost:${PORT}`));
+const pruneLogs = () => pool.query("DELETE FROM system_logs WHERE created_at < now() - interval '30 days'").catch(() => {});
+pruneLogs();
+setInterval(pruneLogs, 24 * 60 * 60 * 1000).unref();
+cfg.log('info', 'server', 'Serwer uruchomiony', { port: PORT });
+
+const HOST = process.env.HOST || '0.0.0.0'; // 0.0.0.0 = dostępny w całej sieci lokalnej
+server.listen(PORT, HOST, () => {
+  console.log('⚔️  Królestwo Cieni — serwer działa');
+  console.log(`   Na tym komputerze:      http://localhost:${PORT}`);
+  if (HOST === '0.0.0.0') {
+    for (const list of Object.values(require('os').networkInterfaces())) {
+      for (const n of list || []) {
+        if (n.family === 'IPv4' && !n.internal) console.log(`   Inne urządzenia (Wi-Fi): http://${n.address}:${PORT}`);
+      }
+    }
+  }
+});
 
 const shutdown = () => { server.close(() => pool.end().then(() => process.exit(0))); setTimeout(() => process.exit(0), 5000).unref(); };
 process.on('SIGINT', shutdown);
