@@ -132,3 +132,9 @@ Siła: +12
 Szansa podpalenia: 8%
 
 Rzadkość: LEGENDARNY
+
+---
+
+## © Prawa autorskie
+
+© 2026 Adam Drozd. Wszelkie prawa zastrzeżone.

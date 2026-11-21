@@ -11,6 +11,7 @@
   "engines": {
     "node": ">=18"
   },
+  "author": "Adam Drozd",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
