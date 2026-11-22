@@ -26,8 +26,60 @@ pool.on('error', (e) => console.error('[pg] błąd połączenia:', e.message));
 cfg.init(pool);
 
 const app = express();
-app.set('trust proxy', 1);
+
+// Zaufanie do proxy tylko jawnie, przez ENV (domyślnie: brak). Bez tego req.ip to adres gniazda,
+// więc nagłówek X-Forwarded-For od klienta nie może posłużyć do obejścia limitów.
+//   TRUST_PROXY=1         -> jeden proxy przed aplikacją (nginx / Caddy / tunel)
+//   TRUST_PROXY=loopback  -> tylko proxy na tej samej maszynie (można też podać listę IP/CIDR)
+// Wartość "true" jest odrzucana: ufałaby dowolnemu nagłówkowi wysłanemu przez klienta.
+function configureTrustProxy() {
+  const raw = String(process.env.TRUST_PROXY ?? '').trim();
+  const die = (m) => { console.error('[config] ' + m); process.exit(1); };
+  if (!raw || raw === '0' || raw.toLowerCase() === 'false') return false;
+  if (raw.toLowerCase() === 'true') die('TRUST_PROXY=true jest niedozwolone. Podaj liczbę proxy (np. 1), "loopback" albo listę IP/CIDR.');
+  try { app.set('trust proxy', /^\d+$/.test(raw) ? Number(raw) : raw); }
+  catch (e) { die('Nieprawidłowa wartość TRUST_PROXY: ' + e.message); }
+  return true;
+}
+const proxyTrusted = configureTrustProxy();
 app.disable('x-powered-by');
+
+// ---------- nagłówki bezpieczeństwa ----------
+// CSP w dwóch warstwach:
+//  1) wymuszana zawsze — dyrektywy, które nie mogą zepsuć gry: clickjacking, <object>, <base>, formularze;
+//  2) pełna polityka zasobów (CSP_FULL) — domyślnie tylko RAPORTOWANA w konsoli przeglądarki (Report-Only).
+//     Gra ma ~21 inline <script>, 54 inline onclick i inline <style>, więc 'unsafe-inline' jest konieczne,
+//     a connect-src musi dopuszczać dowolny serwer wpisany w polu adresu. Po sprawdzeniu konsoli
+//     (brak komunikatów "Refused to ...") ustaw CSP_ENFORCE=true, żeby ją wymuszać.
+const CSP_SAFE = "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+const CSP_FULL = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' data: blob:",
+  "connect-src 'self' http: https: ws: wss:",
+  CSP_SAFE,
+].join('; ');
+const CSP_ENFORCE = String(process.env.CSP_ENFORCE || '').toLowerCase() === 'true';
+let warnedXff = false;
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  if (CSP_ENFORCE) res.setHeader('Content-Security-Policy', CSP_FULL);
+  else {
+    res.setHeader('Content-Security-Policy', CSP_SAFE);
+    res.setHeader('Content-Security-Policy-Report-Only', CSP_FULL);
+  }
+  if (req.secure) res.setHeader('Strict-Transport-Security', 'max-age=15552000'); // tylko po HTTPS (wymaga TRUST_PROXY za proxy)
+  if (!proxyTrusted && !warnedXff && req.headers['x-forwarded-for']) {
+    warnedXff = true;
+    console.warn('[config] Wykryto X-Forwarded-For, ale TRUST_PROXY nie jest ustawione — wszyscy gracze za proxy będą mieć wspólny limit IP. Ustaw TRUST_PROXY=1, jeśli przed aplikacją stoi proxy.');
+  }
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 
 // ---------- CORS ----------
@@ -74,6 +126,34 @@ function ttlCache(ttlMs, maxEntries) {
 }
 const configCache = ttlCache(10_000, 1);
 const rankingCache = ttlCache(15_000, 100);
+
+// Licznik NIEUDANYCH logowań (okno stałe 15 min), niezależny od limitu IP na trasie:
+//  - para IP + konto: zwykłe pomyłki z jednego adresu,
+//  - samo konto: atak rozproszony z wielu adresów.
+// Liczony tak samo dla istniejących i nieistniejących nazw — odpowiedź nie zdradza, czy konto istnieje.
+// Klucze wymyśla klient, więc rozmiar mapy jest ograniczony (najstarszy wpis wypada pierwszy).
+const loginFails = new Map(); // klucz -> { n, reset }
+const LOGIN_FAIL_WINDOW = 15 * 60_000;
+const LOGIN_FAIL_MAX_IP_USER = 10;
+const LOGIN_FAIL_MAX_USER = 30;
+const LOGIN_FAIL_CAP = 20000;
+const failCount = (k) => { const e = loginFails.get(k); return e && e.reset > Date.now() ? e.n : 0; };
+function failAdd(k) {
+  const now = Date.now();
+  let e = loginFails.get(k);
+  if (!e || e.reset <= now) {
+    loginFails.delete(k);
+    if (loginFails.size >= LOGIN_FAIL_CAP) loginFails.delete(loginFails.keys().next().value);
+    e = { n: 0, reset: now + LOGIN_FAIL_WINDOW };
+    loginFails.set(k, e);
+  }
+  return ++e.n;
+}
+setInterval(() => { const now = Date.now(); for (const [k, e] of loginFails) if (e.reset <= now) loginFails.delete(k); }, 5 * 60_000).unref();
+// Odcisk nieznanego loginu do logów: HMAC z losowym kluczem procesu — pozwala zauważyć powtarzające się próby
+// na tę samą nazwę, ale nie da się z niego odzyskać wpisanego tekstu (mógł to być przypadkiem wpisany hasło).
+const FP_SECRET = crypto.randomBytes(16);
+const fingerprint = (t) => crypto.createHmac('sha256', FP_SECRET).update(t).digest('hex').slice(0, 8);
 
 async function createSession(accountId, req) {
   const token = crypto.randomBytes(32).toString('hex');
@@ -234,6 +314,11 @@ const DUMMY_HASH = bcrypt.hashSync('nieistniejace-haslo', 12);
 app.post('/api/login', limit(15, 60_000), wrap(async (req, res) => {
   const { username, password } = req.body || {};
   if (typeof username !== 'string' || typeof password !== 'string') throw new HttpError(400, 'Podaj login i hasło.');
+  const uname = username.slice(0, 24).toLowerCase();
+  const kIpUser = 'iu:' + req.ip + '|' + uname, kUser = 'u:' + uname;
+  if (failCount(kIpUser) >= LOGIN_FAIL_MAX_IP_USER || failCount(kUser) >= LOGIN_FAIL_MAX_USER) {
+    throw new HttpError(429, 'Zbyt wiele nieudanych prób logowania. Spróbuj ponownie za kilka minut.');
+  }
   const { rows } = await pool.query(
     'SELECT id, username, password_hash, role, is_banned, ban_reason, banned_until FROM accounts WHERE lower(username) = lower($1)',
     [username.slice(0, 24)]
@@ -241,9 +326,17 @@ app.post('/api/login', limit(15, 60_000), wrap(async (req, res) => {
   const acc = rows[0];
   const ok = await bcrypt.compare(password.slice(0, 72), acc ? acc.password_hash : DUMMY_HASH);
   if (!acc || !ok) {
-    cfg.log('warn', 'auth', `Nieudane logowanie: ${username.slice(0, 24)}`, { ip: req.ip });
+    const nIpUser = failAdd(kIpUser), nUser = failAdd(kUser);
+    // Wpisany tekst logujemy tylko, gdy to nazwa istniejącego konta (zapisujemy jego nazwę z bazy).
+    // Dla nieznanych nazw — wyłącznie odcisk, bo ktoś mógł wpisać hasło w pole loginu.
+    const who = acc ? acc.username : `nieznane konto #${fingerprint(uname)}`;
+    cfg.log('warn', 'auth', `Nieudane logowanie: ${who}`, { ip: req.ip });
+    if (nIpUser === LOGIN_FAIL_MAX_IP_USER || nUser === LOGIN_FAIL_MAX_USER) {
+      cfg.log('warn', 'auth', `Zablokowano logowanie po serii nieudanych prób: ${who}`, { ip: req.ip, limit: nUser >= LOGIN_FAIL_MAX_USER ? 'konto' : 'ip+konto' });
+    }
     throw new HttpError(401, 'Nieprawidłowy login lub hasło.');
   }
+  loginFails.delete(kIpUser);
   if (acc.is_banned && (!acc.banned_until || new Date(acc.banned_until) > new Date())) {
     const until = acc.banned_until ? ' (do ' + new Date(acc.banned_until).toLocaleString('pl-PL') + ')' : '';
     throw new HttpError(403, 'Konto zablokowane' + until + (acc.ban_reason ? ': ' + acc.ban_reason : '.'));

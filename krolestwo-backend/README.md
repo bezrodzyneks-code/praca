@@ -52,7 +52,7 @@ Limity: logowanie 15 prób/min, rejestracja 10/min na IP; czat max 1 wiadomość
   trzeba przenieść walkę i dropy na serwer — tabele `combats`, `combat_turns` i `monster_drops` są na to gotowe.
 - Klasa **Łotr** z gry jest w bazie zapisana jako **Łucznik** (kod `archer`); serwer tłumaczy nazwy w obie strony.
 - Cała baza jest w schemacie `kc`.
-- W produkcji: postaw serwer za HTTPS (np. nginx/Caddy — WebSocket przejdzie jako `wss://`) i ustaw `CORS_ORIGIN`.
+- W produkcji: postaw serwer za HTTPS (np. nginx/Caddy — WebSocket przejdzie jako `wss://`), ustaw `CORS_ORIGIN` oraz `TRUST_PROXY=1` (inaczej limity widzą tylko adres proxy).
 
 ## Gra z innego urządzenia w tej samej sieci (LAN)
 

@@ -12,7 +12,7 @@ function showLogin(msg) {
 function logout(expired) {
   if (!expired && KC.token) request('/api/logout', 'POST', undefined, true).catch(() => {});
   KC.token = ''; KC.me = null; KC.meta = null;
-  localStorage.removeItem('kc_admin_token');
+  sessionStorage.removeItem('kc_admin_token');
   clearTimers();
   showLogin(expired ? 'Sesja wygasła — zaloguj się ponownie.' : '');
 }
@@ -49,11 +49,11 @@ async function doLogin() {
   err.textContent = ''; btn.disabled = true; btn.textContent = 'Sprawdzanie uprawnień…';
   try {
     const r = await request('/api/login', 'POST', { username: u, password: p }, false);
-    KC.token = r.token; localStorage.setItem('kc_admin_token', r.token);
+    KC.token = r.token; sessionStorage.setItem('kc_admin_token', r.token);
     try { await enter(); }
     catch (e) { // zalogowano, ale brak roli personelu
       request('/api/logout', 'POST', undefined, true).catch(() => {});
-      KC.token = ''; KC.me = null; localStorage.removeItem('kc_admin_token');
+      KC.token = ''; KC.me = null; sessionStorage.removeItem('kc_admin_token');
       err.textContent = e.status === 403 ? 'To konto nie ma uprawnień do panelu administracyjnego.' : e.message;
     }
   } catch (e) { err.textContent = e.message; }
@@ -69,5 +69,5 @@ $('#burger').onclick = () => $('#side').classList.toggle('open');
 
 (async () => {
   if (!KC.token) return showLogin();
-  try { await enter(); } catch (e) { KC.token = ''; localStorage.removeItem('kc_admin_token'); showLogin(e.status === 403 ? e.message : ''); }
+  try { await enter(); } catch (e) { KC.token = ''; sessionStorage.removeItem('kc_admin_token'); showLogin(e.status === 403 ? e.message : ''); }
 })();

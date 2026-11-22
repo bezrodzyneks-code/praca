@@ -1,6 +1,8 @@
 'use strict';
 /* ===== Królestwo Cieni — panel admina: rdzeń (helpery, API, UI, wykresy, router) ===== */
-const KC = { token: localStorage.getItem('kc_admin_token') || '', me: null, views: {}, acts: {}, meta: null, timers: [], current: null };
+// Token admina żyje tylko w sessionStorage (zniknie po zamknięciu karty). Stary, trwały token z localStorage kasujemy.
+try { localStorage.removeItem('kc_admin_token'); } catch (e) { /* storage niedostępny */ }
+const KC = { token: sessionStorage.getItem('kc_admin_token') || '', me: null, views: {}, acts: {}, meta: null, timers: [], current: null };
 
 /* ---------- bezpieczne szablony HTML (auto-escape) ---------- */
 class Raw { constructor(s) { this.s = s; } }

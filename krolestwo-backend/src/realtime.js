@@ -74,6 +74,9 @@ async function join(c, m) {
     return c.ws.close(4003, 'maintenance');
   }
   const rules = await cfg.effectiveRules(r);
+  // Gniazdo mogło się zamknąć podczas powyższych await — nie dodawaj martwego klienta do listy
+  // (i nie wyrzucaj dla niego starej sesji). Od tego miejsca do clients.add(c) kod jest synchroniczny.
+  if (c.ws.readyState !== 1) return;
 
   // to samo konto zalogowane drugi raz -> stara sesja wylatuje
   for (const o of [...clients]) {
