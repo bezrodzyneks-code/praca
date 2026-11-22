@@ -1,7 +1,7 @@
 
 # ⚔️ Królestwo Cieni
 
-[![Polskie Indyki](https://polskieindyki.pl/badges/gra/krolestwo-cieni.svg?style=pill)](https://polskieindyki.pl/pl/gra/krolestwo-cieni)
+[![Polskie Indyki](https://polskieindyki.pl/badges/gra/krolestwo-cieni.svg)](https://polskieindyki.pl/pl/gra/krolestwo-cieni)
 
 **Zagraj w grę:**
 - [itch.io – Królestwo Cieni](https://adamdrozd.itch.io/krolestwo-cieni)
