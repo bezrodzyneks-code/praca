@@ -1,4 +1,11 @@
+
 # ⚔️ Królestwo Cieni
+
+[![Polskie Indyki](https://polskieindyki.pl/badges/gra/krolestwo-cieni.svg?style=pill)](https://polskieindyki.pl/pl/gra/krolestwo-cieni)
+
+**Zagraj w grę:**
+- [itch.io – Królestwo Cieni](https://adamdrozd.itch.io/krolestwo-cieni)
+- [Zagraj w przeglądarce](https://bezrodzyneks-code.github.io/praca/)
 
 **Królestwo Cieni** to przeglądarkowa gra RPG, w której gracz rozwija swoją postać od 1 do 50 poziomu, walczy z potworami, zdobywa doświadczenie oraz przedmioty i przechodzi coraz trudniejsze instancje.
 
