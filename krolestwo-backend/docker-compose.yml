@@ -1,4 +1,4 @@
-# Lokalna baza: docker compose up -d
+# Lokalna baza: docker compose up -d   (wymaga POSTGRES_PASSWORD w pliku .env obok tego pliku)
 # Pliki z ./db wykonają się automatycznie przy pierwszym starcie (kolejność alfabetyczna).
 services:
   db:
@@ -6,10 +6,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: kc
-      POSTGRES_PASSWORD: kc_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD w pliku .env (skopiuj .env.example)}
       POSTGRES_DB: krolestwo
     ports:
-      - "5432:5432"   # baza tylko lokalnie, nie w sieci
+      - "127.0.0.1:5432:5432"   # baza tylko na tym komputerze, nie w sieci
     volumes:
       - kc_data:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d:ro

@@ -6,11 +6,13 @@ więc serwer wystawia ją pod tym samym adresem — nic nie trzeba konfigurować
 ## Szybki start
 
 ```bash
-# 1. Baza (Docker) — schemat i dane startowe załadują się same
+# 1. Konfiguracja — ustaw własne hasło do bazy w .env (to samo w DATABASE_URL i POSTGRES_PASSWORD)
+cp .env.example .env
+
+# 2. Baza (Docker) — schemat i dane startowe załadują się same; port tylko na 127.0.0.1
 docker compose up -d
 
-# 2. Serwer
-cp .env.example .env
+# 3. Serwer
 npm install
 npm start
 ```

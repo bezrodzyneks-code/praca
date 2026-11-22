@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs');
 const { Pool, types } = require('pg');
 types.setTypeParser(20, (v) => Number(v));      // bigint -> number (liczniki, id)
 types.setTypeParser(1700, (v) => parseFloat(v)); // numeric -> number
-const { CLS_TO_CODE, CODE_TO_CLS, sha256, HttpError } = require('./common');
+const { CLS_TO_CODE, CODE_TO_CLS, sha256, HttpError, getDatabaseUrl } = require('./common');
 const realtime = require('./realtime');
 const cfg = require('./config');
 const createAdminRouter = require('./admin');
@@ -17,7 +17,7 @@ const createAdminRouter = require('./admin');
 const PORT = Number(process.env.PORT) || 8080;
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://kc:kc_password@localhost:5432/krolestwo',
+  connectionString: getDatabaseUrl(),
   ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
   options: '-c search_path=kc,public',
   max: 10,
@@ -43,9 +43,9 @@ app.use((req, res, next) => {
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 const hits = new Map();
-function limit(max, windowMs) {
+function limit(max, windowMs, keyFn) {
   return (req, res, next) => {
-    const key = req.ip + req.path;
+    const key = keyFn ? keyFn(req) : req.ip + req.path;
     const now = Date.now();
     const arr = (hits.get(key) || []).filter((t) => now - t < windowMs);
     if (arr.length >= max) return res.status(429).json({ error: 'Zbyt wiele prób. Spróbuj za chwilę.' });
@@ -55,6 +55,25 @@ function limit(max, windowMs) {
   };
 }
 setInterval(() => hits.clear(), 10 * 60 * 1000).unref();
+
+// Prosty cache TTL w pamięci (współdzieli trwające zapytanie, nie cache'uje błędów,
+// liczba kluczy ograniczona — najstarszy wpis wypada pierwszy).
+function ttlCache(ttlMs, maxEntries) {
+  const store = new Map();
+  return async (key, load) => {
+    const now = Date.now();
+    const hit = store.get(key);
+    if (hit && hit.exp > now) return hit.value;
+    const entry = { exp: now + ttlMs, value: Promise.resolve().then(load) };
+    store.delete(key);
+    store.set(key, entry);
+    if (store.size > maxEntries) store.delete(store.keys().next().value);
+    try { return await entry.value; }
+    catch (e) { if (store.get(key) === entry) store.delete(key); throw e; }
+  };
+}
+const configCache = ttlCache(10_000, 1);
+const rankingCache = ttlCache(15_000, 100);
 
 async function createSession(accountId, req) {
   const token = crypto.randomBytes(32).toString('hex');
@@ -348,7 +367,11 @@ app.post('/api/characters', auth, wrap(async (req, res) => {
   }
 }));
 
-app.post('/api/characters/:id/save', auth, wrap(async (req, res) => {
+// Autosave klienta: debounce 2,5 s (maks. ok. 24 zapisów/min) + zapis przy wyjściu/ukryciu karty.
+// Limit 60/min na konto zostawia duży zapas uczciwym graczom, a blokuje spam (klient przy 429 nic nie psuje —
+// kolejna zmiana stanu uruchamia nowy zapis).
+const saveLimit = limit(60, 60_000, (req) => 'save:' + req.user.id);
+app.post('/api/characters/:id/save', auth, saveLimit, wrap(async (req, res) => {
   const id = clampInt(req.params.id, 0, Number.MAX_SAFE_INTEGER);
   await tx((db) => applySave(db, id, req.user.id, req.body && req.body.data));
   res.json({ ok: true });
@@ -365,16 +388,21 @@ app.delete('/api/characters/:id', auth, wrap(async (req, res) => {
 }));
 
 // Ranking graczy (publiczny): /api/ranking?realm=cienie
+const loadRanking = async (realm) => (await pool.query(
+  `SELECT place, name, class, level, monsters_killed FROM v_ranking
+    WHERE realm_id = $1 AND place <= 50 ORDER BY place`, [realm])).rows;
 app.get('/api/ranking', wrap(async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT place, name, class, level, monsters_killed FROM v_ranking
-      WHERE realm_id = $1 AND place <= 50 ORDER BY place`, [String(req.query.realm || 'cienie')]);
-  res.json({ ranking: rows });
+  const realm = String(req.query.realm || 'cienie');
+  // cache tylko dla poprawnych identyfikatorów świata (nie dla dowolnych napisów z URL)
+  const ranking = /^[a-z0-9_-]{1,32}$/i.test(realm)
+    ? await rankingCache(realm, () => loadRanking(realm))
+    : await loadRanking(realm);
+  res.json({ ranking });
 }));
 
 // Publiczna konfiguracja gry: ustawienia serwera, ekonomia, eventy, aktualizacje oraz
 // wartości potworów i przedmiotów z bazy (nadpisują domyślne w kliencie).
-app.get('/api/config', wrap(async (req, res) => {
+const loadConfigPayload = async () => {
   const s = await cfg.get();
   const [mon, items, upd] = await Promise.all([
     pool.query('SELECT code, name, level, hp, atk, exp_reward, gold_min, gold_max FROM monsters'),
@@ -382,14 +410,17 @@ app.get('/api/config', wrap(async (req, res) => {
     pool.query(`SELECT version, title, body, published_at FROM game_updates WHERE status = 'published'
                  ORDER BY published_at DESC NULLS LAST, id DESC LIMIT 3`),
   ]);
-  res.json({
+  return {
     maintenance: s.server.maintenance, maintenance_msg: s.server.maintenance_msg,
     registration_open: s.server.registration_open, motd: s.server.motd, chat_enabled: s.server.chat_enabled,
     economy: s.economy, events: s.events, updates: upd.rows,
     monsters: mon.rows.map((m) => ({ code: m.code, name: m.name, lvl: m.level, hp: m.hp, atk: m.atk,
       exp: m.exp_reward, gold: Math.round((m.gold_min + m.gold_max) / 2) })),
     items: items.rows.map((i) => ({ id: i.code, name: i.name, atk: i.atk, def: i.def, price: i.buy_price })),
-  });
+  };
+};
+app.get('/api/config', wrap(async (req, res) => {
+  res.json(await configCache('config', loadConfigPayload));
 }));
 
 // ---------- panel administratora ----------
@@ -415,6 +446,28 @@ realtime.attach(server, { pool, auth: authFromToken });
 const pruneLogs = () => pool.query("DELETE FROM system_logs WHERE created_at < now() - interval '30 days'").catch(() => {});
 pruneLogs();
 setInterval(pruneLogs, 24 * 60 * 60 * 1000).unref();
+
+// Sprzątanie sesji, których i tak nie da się użyć: wygasłych lub unieważnionych ponad 7 dni temu.
+// Aktywna sesja (revoked_at IS NULL i expires_at w przyszłości) nigdy nie spełnia tego warunku. Kasowanie partiami.
+async function pruneSessions() {
+  const BATCH = 5000;
+  let total = 0;
+  try {
+    for (let i = 0; i < 20; i++) {
+      const r = await pool.query(
+        `DELETE FROM sessions WHERE id IN (
+           SELECT id FROM sessions
+            WHERE expires_at < now() - interval '7 days'
+               OR (revoked_at IS NOT NULL AND revoked_at < now() - interval '7 days')
+            LIMIT ${BATCH})`);
+      total += r.rowCount;
+      if (r.rowCount < BATCH) break;
+    }
+    if (total) cfg.log('info', 'server', `Usunięto ${total} nieużywanych sesji`);
+  } catch (e) { console.error('[pg] sprzątanie sesji:', e.message); }
+}
+pruneSessions();
+setInterval(pruneSessions, 6 * 60 * 60 * 1000).unref();
 cfg.log('info', 'server', 'Serwer uruchomiony', { port: PORT });
 
 const HOST = process.env.HOST || '0.0.0.0'; // 0.0.0.0 = dostępny w całej sieci lokalnej

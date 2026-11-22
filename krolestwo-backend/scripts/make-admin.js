@@ -6,6 +6,7 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+const { getDatabaseUrl } = require('../src/common');
 
 (async () => {
   const [, , username, password, roleArg] = process.argv;
@@ -15,7 +16,7 @@ const bcrypt = require('bcryptjs');
     process.exit(1);
   }
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgres://kc:kc_password@localhost:5432/krolestwo',
+    connectionString: getDatabaseUrl(),
     ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
   });
   try {

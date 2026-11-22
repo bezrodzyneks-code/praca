@@ -1,1 +1,23 @@
+# zależności (odtwarzane przez: npm install)
 node_modules/
+
+# sekrety i lokalna konfiguracja — NIGDY do repozytorium
+.env
+.env.*
+!.env.example
+
+# logi
+*.log
+npm-debug.log*
+
+# pliki systemowe i edytorów
+desktop.ini
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# artefakty
+coverage/
+dist/
+*.tmp
