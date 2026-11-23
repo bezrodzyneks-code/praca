@@ -10,6 +10,7 @@ const { Pool, types } = require('pg');
 types.setTypeParser(20, (v) => Number(v));      // bigint -> number (liczniki, id)
 types.setTypeParser(1700, (v) => parseFloat(v)); // numeric -> number
 const { CLS_TO_CODE, CODE_TO_CLS, sha256, HttpError, getDatabaseUrl } = require('./common');
+const { sanitizeSave, buildMonsterTable } = require('./saveGuard');
 const realtime = require('./realtime');
 const cfg = require('./config');
 const createAdminRouter = require('./admin');
@@ -193,43 +194,100 @@ const auth = wrap(async (req, res, next) => {
 
 const clampInt = (v, min, max) => Math.min(max, Math.max(min, Math.floor(Number(v)) || 0));
 
+// Tryb ochrony zapisu (saveGuard.js): enforce = filtruje i ogranicza zapis (domyślnie);
+// monitor = zapisuje jak dawniej, ale loguje, co zostałoby skorygowane (do kalibracji); off = wyłączone.
+const SAVE_GUARD = ['enforce', 'monitor', 'off'].includes(String(process.env.SAVE_GUARD || '').toLowerCase())
+  ? String(process.env.SAVE_GUARD).toLowerCase() : 'enforce';
+
+// Dane referencyjne dla ochrony zapisu (potwory i przedmioty z bazy, reguły świata) — z krótkim cache.
+const guardDataCache = ttlCache(60_000, 1);
+const loadGuardData = () => guardDataCache('guard', async () => {
+  const [mon, items] = await Promise.all([
+    pool.query('SELECT code, level, exp_reward, gold_max FROM monsters'),
+    pool.query('SELECT code, atk, def, buy_price FROM items'),
+  ]);
+  const itemCaps = {};
+  for (const r of items.rows) itemCaps[r.code] = { atk: r.atk, def: r.def, price: r.buy_price };
+  return { monsters: buildMonsterTable(mon.rows), itemCaps };
+});
+const realmRulesCache = ttlCache(15_000, 50);
+const loadRealmRules = (realmId) => realmRulesCache('rules:' + realmId, async () => {
+  const { rows } = await pool.query('SELECT exp_rate, drop_rate, death_penalty FROM realms WHERE id = $1', [realmId]);
+  return cfg.effectiveRules(rows[0] || {});
+});
+const guardLogAt = new Map(); // postać -> czas ostatniego wpisu w logu (ograniczenie spamu)
+function logGuard(charId, name, username, res, mode) {
+  const now = Date.now();
+  if (now - (guardLogAt.get(charId) || 0) < 60_000) return;
+  if (guardLogAt.size > 5000) guardLogAt.clear();
+  guardLogAt.set(charId, now);
+  cfg.log('warn', 'save', `${mode === 'enforce' ? 'Skorygowano zapis' : 'Podejrzany zapis (tryb monitor)'}: ${name} (${res.adjustments.length} zmian)`,
+    { charId, account: username, changes: res.adjustments.slice(0, 10) });
+}
+
 // Zapisuje stan gry wysłany przez klienta: JSON w save_data + kluczowe statystyki
 // w kolumnach (ranking, widoki, bestiariusz). Wywoływane wewnątrz transakcji.
-async function applySave(db, charId, accountId, data) {
+// opts.create = true: zapis początkowy nowej postaci (wartości początkowe ustala serwer, dane postępu od klienta są ignorowane).
+async function applySave(db, charId, accountId, data, opts = {}) {
   if (!data || typeof data !== 'object' || !data.hero || typeof data.hero !== 'object') {
     throw new HttpError(400, 'Nieprawidłowe dane zapisu.');
   }
-  const h = data.hero;
-  const w = data.world && typeof data.world === 'object' ? data.world : {};
-
-  const lvl = clampInt(h.lvl, 1, 50);
-  const maxHp = clampInt(h.maxHp, 1, 1_000_000);
-  const maxMp = clampInt(h.maxMp, 0, 1_000_000);
-  const vals = {
-    exp: clampInt(h.exp, 0, 2_000_000_000),
-    gold: clampInt(h.gold, 0, 2_000_000_000),
-    hp: Math.min(clampInt(h.hp, 0, 1_000_000), maxHp),
-    mp: Math.min(clampInt(h.mp, 0, 1_000_000), maxMp),
-    atk: clampInt(h.atk, 0, 1_000_000),
-    def: clampInt(h.def, 0, 1_000_000),
-  };
-  const killsObj = w.kills && typeof w.kills === 'object' ? w.kills : {};
-  const killCodes = Object.keys(killsObj).filter((k) => /^[a-z_]{1,24}$/.test(k));
-  const killCounts = killCodes.map((k) => clampInt(killsObj[k], 0, 1_000_000));
-  const totalKills = killCounts.reduce((a, b) => a + b, 0);
-  const map = /^[a-z_]{1,24}$/.test(String(w.map)) ? String(w.map) : 'town';
-  const px = Math.max(-9999, Math.min(9999, Number(w.x) || 0));
-  const py = Math.max(-9999, Math.min(9999, Number(w.y) || 0));
 
   const cur = await db.query(
-    'SELECT level, force_reload FROM characters WHERE id = $1 AND account_id = $2 AND deleted_at IS NULL FOR UPDATE',
+    `SELECT ch.name, ch.realm_id, ch.level, ch.exp, ch.gold, ch.hp, ch.mp, ch.max_hp, ch.max_mp, ch.atk, ch.def,
+            ch.force_reload, ch.save_data, ch.last_saved_at, cl.code AS cls_code,
+            cl.base_hp, cl.base_mp, cl.base_atk, cl.base_def,
+            cl.hp_per_level, cl.mp_per_level, cl.atk_per_level, cl.def_per_level
+       FROM characters ch JOIN classes cl ON cl.id = ch.class_id
+      WHERE ch.id = $1 AND ch.account_id = $2 AND ch.deleted_at IS NULL FOR UPDATE OF ch`,
     [charId, accountId]
   );
-  if (!cur.rows[0]) throw new HttpError(404, 'Nie znaleziono postaci.');
-  if (cur.rows[0].force_reload) {
+  const row = cur.rows[0];
+  if (!row) throw new HttpError(404, 'Nie znaleziono postaci.');
+  if (row.force_reload) {
     throw new HttpError(409, 'Administrator zmodyfikował Twoją postać — odśwież stronę i wczytaj ją ponownie.');
   }
-  const oldLevel = cur.rows[0].level;
+  const oldLevel = row.level;
+
+  // Wartości dotychczasowe (przycięte do zakresów) — używane przy SAVE_GUARD=off oraz w trybie monitor.
+  const legacy = (() => {
+    const h = data.hero;
+    const w = data.world && typeof data.world === 'object' ? data.world : {};
+    const maxHp = clampInt(h.maxHp, 1, 1_000_000);
+    const maxMp = clampInt(h.maxMp, 0, 1_000_000);
+    const killsObj = w.kills && typeof w.kills === 'object' ? w.kills : {};
+    const killCodes = Object.keys(killsObj).filter((k) => /^[a-z_]{1,24}$/.test(k));
+    const killCounts = killCodes.map((k) => clampInt(killsObj[k], 0, 1_000_000));
+    return {
+      lvl: clampInt(h.lvl, 1, 50), exp: clampInt(h.exp, 0, 2_000_000_000), gold: clampInt(h.gold, 0, 2_000_000_000),
+      hp: Math.min(clampInt(h.hp, 0, 1_000_000), maxHp), maxHp, mp: Math.min(clampInt(h.mp, 0, 1_000_000), maxMp), maxMp,
+      atk: clampInt(h.atk, 0, 1_000_000), def: clampInt(h.def, 0, 1_000_000),
+      killCodes, killCounts, totalKills: killCounts.reduce((a, b) => a + b, 0),
+      map: /^[a-z_]{1,24}$/.test(String(w.map)) ? String(w.map) : 'town',
+      x: Math.max(-9999, Math.min(9999, Number(w.x) || 0)), y: Math.max(-9999, Math.min(9999, Number(w.y) || 0)),
+      blob: data,
+    };
+  })();
+
+  let v = legacy, adjusted = 0;
+  if (SAVE_GUARD !== 'off') {
+    const [gd, rules] = await Promise.all([loadGuardData(), loadRealmRules(row.realm_id)]);
+    const res = sanitizeSave({
+      mode: opts.create ? 'create' : 'save', incoming: data, stored: row.save_data, now: Date.now(),
+      row: {
+        id: charId, username: opts.username || '', name: row.name, cls: CODE_TO_CLS[row.cls_code],
+        level: row.level, exp: row.exp, gold: row.gold, hp: row.hp, mp: row.mp, max_hp: row.max_hp, max_mp: row.max_mp,
+        atk: row.atk, def: row.def, last_saved_at: row.last_saved_at ? new Date(row.last_saved_at).getTime() : Date.now(),
+        klass: row,
+      },
+      ctx: { xpMul: rules.xp, goldMul: rules.gold, monsters: gd.monsters, itemCaps: gd.itemCaps },
+    });
+    if (res.adjustments.length) logGuard(charId, row.name, opts.username || '', res, SAVE_GUARD);
+    if (SAVE_GUARD === 'enforce') {
+      adjusted = res.adjustments.length;
+      v = { ...res.cols, blob: res.data };
+    }
+  }
 
   await db.query(
     `UPDATE characters ch SET
@@ -242,26 +300,27 @@ async function applySave(db, charId, accountId, data) {
         save_data = $16::jsonb, last_saved_at = now()
        FROM classes c
       WHERE ch.id = $1 AND ch.account_id = $2 AND c.id = ch.class_id`,
-    [charId, accountId, lvl, vals.exp, vals.gold, vals.hp, maxHp, vals.mp, maxMp,
-     vals.atk, vals.def, totalKills, map, px, py, JSON.stringify(data)]
+    [charId, accountId, v.lvl, v.exp, v.gold, v.hp, v.maxHp, v.mp, v.maxMp,
+     v.atk, v.def, v.totalKills, v.map, v.x, v.y, JSON.stringify(v.blob)]
   );
 
-  if (killCodes.length) {
+  if (v.killCodes.length) {
     await db.query(
       `INSERT INTO character_bestiary (character_id, monster_id, kills)
        SELECT $1, m.id, k.kills FROM unnest($2::text[], $3::int[]) AS k(code, kills)
          JOIN monsters m ON m.code = k.code
        ON CONFLICT (character_id, monster_id)
        DO UPDATE SET kills = GREATEST(character_bestiary.kills, EXCLUDED.kills)`,
-      [charId, killCodes, killCounts]
+      [charId, v.killCodes, v.killCounts]
     );
   }
-  if (lvl > oldLevel) {
+  if (v.lvl > oldLevel) {
     await db.query(
       `INSERT INTO character_events (character_id, event_type, message) VALUES ($1,'level_up',$2)`,
-      [charId, `Awans na poziom ${lvl}!`]
+      [charId, `Awans na poziom ${v.lvl}!`]
     );
   }
+  return { adjusted };
 }
 
 async function tx(fn) {
@@ -449,7 +508,7 @@ app.post('/api/characters', auth, wrap(async (req, res) => {
       const created = await db.query('SELECT create_character($1,$2,$3,$4) AS id',
         [req.user.id, realm, name.trim(), clsCode]);
       const id = created.rows[0].id;
-      if (data) await applySave(db, id, req.user.id, data);
+      if (data) await applySave(db, id, req.user.id, data, { create: true, username: req.user.username });
       return id;
     });
     res.json({ id: out, name: name.trim() });
@@ -466,8 +525,8 @@ app.post('/api/characters', auth, wrap(async (req, res) => {
 const saveLimit = limit(60, 60_000, (req) => 'save:' + req.user.id);
 app.post('/api/characters/:id/save', auth, saveLimit, wrap(async (req, res) => {
   const id = clampInt(req.params.id, 0, Number.MAX_SAFE_INTEGER);
-  await tx((db) => applySave(db, id, req.user.id, req.body && req.body.data));
-  res.json({ ok: true });
+  const out = await tx((db) => applySave(db, id, req.user.id, req.body && req.body.data, { username: req.user.username }));
+  res.json(out && out.adjusted ? { ok: true, adjusted: out.adjusted } : { ok: true });
 }));
 
 app.delete('/api/characters/:id', auth, wrap(async (req, res) => {
